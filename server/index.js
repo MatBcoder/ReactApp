@@ -1,3 +1,10 @@
+const admin = require("firebase-admin");
+
+admin.initializeApp({
+  credential: admin.credential.cert(require("./firebase-service-account.json"))
+});
+
+
 require('dotenv').config();
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
