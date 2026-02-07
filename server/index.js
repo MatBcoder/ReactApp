@@ -11,7 +11,7 @@ const supabase = createClient(
 );
 
 app.get('/', async (req, res) => {
-  res.send('Node server is running!');
+  res.send('Node server is running! ON PORT 3001');
 });
 
 app.listen(port, () => {
