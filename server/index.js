@@ -24,3 +24,21 @@ app.get('/', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+async function verifyFirebaseToken(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) return res.status(401).send("No token");
+
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded;
+    next();
+  } catch {
+    res.status(401).send("Invalid token");
+  }
+}
+
+app.get("/protected", verifyFirebaseToken, (req, res) => {
+  res.json({ uid: req.user.uid });
+});
