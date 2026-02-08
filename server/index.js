@@ -1,30 +1,24 @@
+require('dotenv').config();
+const express = require('express');
+const { createClient } = require('@supabase/supabase-js');
 const admin = require("firebase-admin");
 
+// 1. Init Firebase
 admin.initializeApp({
   credential: admin.credential.cert(require("./firebase-service-account.json"))
 });
 
-
-require('dotenv').config();
-const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-
+// 2. Init Express
 const app = express();
 const port = 3001;
 
+// 3. Init Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
 
-app.get('/', async (req, res) => {
-  res.send('Node server is running! ON PORT 3001');
-});
-
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
-
+// 4. Middleware
 async function verifyFirebaseToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -39,6 +33,25 @@ async function verifyFirebaseToken(req, res, next) {
   }
 }
 
-app.get("/protected", verifyFirebaseToken, (req, res) => {
-  res.json({ uid: req.user.uid });
+// 5. Routes
+app.get('/', (req, res) => {
+  res.send('Node server is running! ON PORT 3001');
+});
+
+app.get("/protected", verifyFirebaseToken, async (req, res) => {
+  const uid = req.user.uid;
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("firebase_uid", uid);
+
+  if (error) return res.status(500).json(error);
+
+  res.json(data);
+});
+
+// 6. Start server LAST
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port}`);
 });
