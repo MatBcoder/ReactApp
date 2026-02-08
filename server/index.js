@@ -62,6 +62,19 @@ app.get("/protected", verifyFirebaseToken, async (req, res) => {
   res.json(existingUser);
 });
 
+app.post("/register", verifyFirebaseToken, async (req, res) => {
+  const uid = req.user.uid;
+  const email = req.user.email;
+
+  const { error } = await supabase
+    .from("users")
+    .insert([{ firebase_uid: uid, email }]);
+
+  if (error) return res.status(500).json(error);
+
+  res.json({ message: "User registered in DB" });
+});
+
 
 // 6. Start server LAST
 app.listen(port, () => {
