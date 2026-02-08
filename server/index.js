@@ -47,15 +47,21 @@ app.get('/', (req, res) => {
 app.get("/protected", verifyFirebaseToken, async (req, res) => {
   const uid = req.user.uid;
 
-  const { data, error } = await supabase
+  const { data: existingUser, error } = await supabase
     .from("users")
     .select("*")
-    .eq("firebase_uid", uid);
+    .eq("firebase_uid", uid)
+    .single();
+
+  if (error && error.code === "PGRST116") {
+    return res.status(403).json({ message: "User not registered. Please sign up." });
+  }
 
   if (error) return res.status(500).json(error);
 
-  res.json(data);
+  res.json(existingUser);
 });
+
 
 // 6. Start server LAST
 app.listen(port, () => {
