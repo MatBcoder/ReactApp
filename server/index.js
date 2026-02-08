@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const admin = require("firebase-admin");
 
@@ -10,6 +11,11 @@ admin.initializeApp({
 
 // 2. Init Express
 const app = express();
+app.use(cors({
+  origin: "http://localhost:5173"
+}));
+
+
 const port = 3001;
 
 // 3. Init Supabase
